@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "SplitDNS Router",
+    "description": "Extension name shown in the toolbar and on the store listing"
+  },
+  "appDesc": {
+    "message": "mosdns-style DNS routing inside the browser: domain rules, block/allow lists, DoH upstream groups, per-domain proxy splitting and cache.",
+    "description": "Short description, max 132 characters"
+  }
+}

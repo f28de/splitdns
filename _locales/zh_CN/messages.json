@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "SplitDNS 分流器",
+    "description": "扩展名称，显示在浏览器工具栏与商店页面"
+  },
+  "appDesc": {
+    "message": "在浏览器内实现 mosdns 式 DNS 分流：域名规则匹配、拦截与白名单、DoH 上游分组解析、按域名分流代理与缓存。",
+    "description": "扩展简介，不超过 132 个字符"
+  }
+}

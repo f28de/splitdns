@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "priority": 500,
+    "action": { "type": "block" },
+    "condition": {
+      "urlFilter": "||doubleclick.net^",
+      "resourceTypes": ["main_frame", "sub_frame", "stylesheet", "script", "image", "font", "object", "xmlhttprequest", "ping", "media", "websocket", "other"]
+    }
+  },
+  {
+    "id": 2,
+    "priority": 500,
+    "action": { "type": "block" },
+    "condition": {
+      "urlFilter": "||googleadservices.com^",
+      "resourceTypes": ["main_frame", "sub_frame", "stylesheet", "script", "image", "font", "object", "xmlhttprequest", "ping", "media", "websocket", "other"]
+    }
+  },
+  {
+    "id": 3,
+    "priority": 500,
+    "action": { "type": "block" },
+    "condition": {
+      "urlFilter": "||googlesyndication.com^",
+      "resourceTypes": ["main_frame", "sub_frame", "stylesheet", "script", "image", "font", "object", "xmlhttprequest", "ping", "media", "websocket", "other"]
+    }
+  },
+  {
+    "id": 4,
+    "priority": 500,
+    "action": { "type": "block" },
+    "condition": {
+      "urlFilter": "||adservice.google.com^",
+      "resourceTypes": ["main_frame", "sub_frame", "stylesheet", "script", "image", "font", "object", "xmlhttprequest", "ping", "media", "websocket", "other"]
+    }
+  },
+  {
+    "id": 5,
+    "priority": 500,
+    "action": { "type": "block" },
+    "condition": {
+      "urlFilter": "||scorecardresearch.com^",
+      "resourceTypes": ["main_frame", "sub_frame", "stylesheet", "script", "image", "font", "object", "xmlhttprequest", "ping", "media", "websocket", "other"]
+    }
+  },
+  {
+    "id": 6,
+    "priority": 500,
+    "action": { "type": "block" },
+    "condition": {
+      "urlFilter": "||umeng.com^",
+      "resourceTypes": ["main_frame", "sub_frame", "stylesheet", "script", "image", "font", "object", "xmlhttprequest", "ping", "media", "websocket", "other"]
+    }
+  }
+]

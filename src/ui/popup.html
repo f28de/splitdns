@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SplitDNS</title>
+  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="head">
+    <div class="brand">
+      <img src="../../icons/icon32.png" width="28" height="28" alt="">
+      <div class="brand-text">
+        <strong>SplitDNS</strong>
+        <span class="tiny muted" id="version">—</span>
+      </div>
+    </div>
+    <label class="switch" title="启用 / 暂停">
+      <input type="checkbox" id="master">
+      <span></span>
+    </label>
+  </header>
+
+  <main>
+    <section class="card">
+      <div class="card-head">
+        <span class="card-title">当前站点</span>
+        <span class="badge" id="verdict">检测中</span>
+      </div>
+      <div class="host mono" id="host">—</div>
+      <div class="hit tiny muted" id="hit">未命中任何规则</div>
+      <div class="quick" id="quick">
+        <button data-act="block">加入拦截</button>
+        <button data-act="direct">加入直连</button>
+        <button data-act="proxy">加入代理</button>
+      </div>
+      <div class="toast tiny hidden" id="toast"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <span class="card-title">DNS 查询</span>
+        <select id="rtype" class="rtype">
+          <option>A</option>
+          <option>AAAA</option>
+          <option>CNAME</option>
+          <option>MX</option>
+          <option>TXT</option>
+          <option>NS</option>
+        </select>
+      </div>
+      <form id="qform" class="qform">
+        <input type="text" id="qname" placeholder="输入域名，如 example.com" autocomplete="off" spellcheck="false">
+        <button class="primary" type="submit" id="qbtn">解析</button>
+      </form>
+      <div class="qmeta tiny muted" id="qmeta"></div>
+      <ul class="qres" id="qres"></ul>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span class="tiny muted" id="stats">—</span>
+    <button class="ghost tiny" id="open-options">设置</button>
+  </footer>
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>

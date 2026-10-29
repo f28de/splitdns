@@ -1,0 +1,165 @@
+/* SplitDNS - 共享样式（弹窗与设置页复用） */
+
+:root {
+  --bg: #f6f7f9;
+  --panel: #ffffff;
+  --panel-2: #fbfbfd;
+  --text: #16181d;
+  --text-2: #5b6270;
+  --text-3: #8b93a1;
+  --line: #e4e7ec;
+  --accent: #2563eb;
+  --accent-weak: #eaf1ff;
+  --green: #16a34a;
+  --green-weak: #e8f7ee;
+  --red: #dc2626;
+  --red-weak: #fdeceb;
+  --amber: #b45309;
+  --amber-weak: #fdf3e3;
+  --purple: #7c3aed;
+  --purple-weak: #f2ecfe;
+  --radius: 10px;
+  --radius-sm: 7px;
+  --shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 4px 14px rgba(16, 24, 40, .06);
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #16181c;
+    --panel: #1e2127;
+    --panel-2: #23262d;
+    --text: #eef1f6;
+    --text-2: #a8b0bf;
+    --text-3: #767e8d;
+    --line: #2f333b;
+    --accent: #6b9bff;
+    --accent-weak: #1d2a44;
+    --green: #4ade80;
+    --green-weak: #16301f;
+    --red: #f87171;
+    --red-weak: #3a1c1c;
+    --amber: #fbbf24;
+    --amber-weak: #3a2c12;
+    --purple: #b794f6;
+    --purple-weak: #2a2140;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 4px 14px rgba(0, 0, 0, .35);
+  }
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: var(--radius-sm);
+  padding: 6px 11px;
+  transition: background .15s, border-color .15s, color .15s;
+}
+
+button:hover { background: var(--panel-2); border-color: #cfd6e2; }
+button:active { transform: translateY(.5px); }
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+button.primary:hover { filter: brightness(1.06); background: var(--accent); }
+
+button.ghost { background: transparent; }
+button.danger { color: var(--red); border-color: var(--line); }
+
+button:disabled { opacity: .55; cursor: not-allowed; }
+
+input[type="text"], input[type="number"], input[type="url"], select, textarea {
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 7px 10px;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-weak);
+}
+
+textarea {
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.65;
+  resize: vertical;
+  tab-size: 2;
+}
+
+/* 开关 */
+.switch { position: relative; display: inline-block; width: 42px; height: 24px; flex: none; }
+.switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.switch span {
+  position: absolute;
+  inset: 0;
+  background: #c7ccd6;
+  border-radius: 999px;
+  transition: background .18s;
+}
+.switch span::after {
+  content: "";
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 18px; height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+  transition: transform .18s;
+}
+.switch input:checked + span { background: var(--accent); }
+.switch input:checked + span::after { transform: translateX(18px); }
+.switch input:focus-visible + span { box-shadow: 0 0 0 3px var(--accent-weak); }
+
+/* 徽标 */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .2px;
+  background: var(--panel-2);
+  color: var(--text-2);
+  border: 1px solid var(--line);
+  white-space: nowrap;
+}
+.badge.block { background: var(--red-weak); color: var(--red); border-color: transparent; }
+.badge.direct { background: var(--green-weak); color: var(--green); border-color: transparent; }
+.badge.proxy { background: var(--accent-weak); color: var(--accent); border-color: transparent; }
+.badge.redirect { background: var(--purple-weak); color: var(--purple); border-color: transparent; }
+.badge.warn { background: var(--amber-weak); color: var(--amber); border-color: transparent; }
+
+.mono { font-family: var(--mono); }
+.muted { color: var(--text-2); }
+.tiny { font-size: 11px; }
+.hidden { display: none !important; }
+.warn { color: var(--amber); }
+.err { color: var(--red); }
+.ok { color: var(--green); }

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SplitDNS 设置</title>
+  <link rel="stylesheet" href="common.css">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="side">
+      <div class="side-brand">
+        <img src="../../icons/icon48.png" width="34" height="34" alt="">
+        <div>
+          <strong>SplitDNS</strong>
+          <div class="tiny muted" id="side-version">—</div>
+        </div>
+      </div>
+      <nav class="nav" id="nav">
+        <button class="nav-item active" data-tab="general">常规</button>
+        <button class="nav-item" data-tab="rules">域名规则</button>
+        <button class="nav-item" data-tab="upstream">上游 DNS</button>
+        <button class="nav-item" data-tab="proxy">分流代理</button>
+        <button class="nav-item" data-tab="subs">规则订阅</button>
+        <button class="nav-item" data-tab="data">导入导出</button>
+        <button class="nav-item" data-tab="about">关于</button>
+      </nav>
+      <div class="side-foot tiny muted">
+        浏览器内的 mosdns 式分流
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- ================= 常规 ================= -->
+      <section class="panel" data-panel="general">
+        <h1>常规</h1>
+        <p class="lead">
+          总开关关闭后，动态规则、内置规则集、分流代理与 DoH 查询<b>全部</b>停止：浏览器恢复默认网络行为，
+          扩展也不会再向任何上游发送域名。你的规则与代理配置会保留，重新开启后自动恢复。
+        </p>
+
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="row-title">启用 SplitDNS</div>
+              <div class="row-desc">总开关：规则、内置规则集、分流代理与 DoH 解析的统一开关</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="enabled"><span></span></label>
+          </div>
+          <div class="row">
+            <div>
+              <div class="row-title">内置广告/追踪规则集</div>
+              <div class="row-desc">随扩展打包的静态规则（不联网更新），默认关闭</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="builtin"><span></span></label>
+          </div>
+          <div class="row">
+            <div>
+              <div class="row-title">记录查询日志</div>
+              <div class="row-desc">仅保存在当前浏览器会话，关闭后不再记录</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="log-enabled"><span></span></label>
+          </div>
+          <div class="row">
+            <div>
+              <div class="row-title">允许订阅中的正则规则</div>
+              <div class="row-desc">
+                默认禁用：订阅内容不可信，恶意正则可拖慢浏览器。仅在你信任订阅来源时开启；
+                手动编写的正则规则不受影响。每列表最多 100 条正则。
+                注意：静态检查能挡住已知的回溯构造，但无法覆盖全部写法，开启后仍存在被拖慢的风险。
+              </div>
+            </div>
+            <label class="switch"><input type="checkbox" id="allow-sub-regex"><span></span></label>
+          </div>
+          <div class="row">
+            <div>
+              <div class="row-title">允许订阅写入直连 / 重定向列表</div>
+              <div class="row-desc">
+                默认禁止。订阅是唯一从网络拉取的规则来源：写入「直连」可解除你手写的拦截，
+                写入「重定向」可把你访问的域名改到别的地址。订阅写入「拦截」「代理」不受此限制
+                （它们只会收紧策略）。仅在完全信任订阅来源时开启。
+              </div>
+            </div>
+            <label class="switch"><input type="checkbox" id="allow-sub-trust"><span></span></label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>DoH 缓存</h2>
+          <div class="row">
+            <div>
+              <div class="row-title">启用缓存</div>
+              <div class="row-desc">按响应 TTL 缓存解析结果，减少重复查询</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="cache-enabled"><span></span></label>
+          </div>
+          <div class="grid-3">
+            <label class="field">
+              <span>最小 TTL（秒）</span>
+              <input type="number" id="cache-min" min="1" max="86400">
+            </label>
+            <label class="field">
+              <span>最大 TTL（秒）</span>
+              <input type="number" id="cache-max" min="1" max="86400">
+            </label>
+            <label class="field">
+              <span>最大条目数</span>
+              <input type="number" id="cache-entries" min="10" max="10000">
+            </label>
+          </div>
+          <div class="actions">
+            <button id="cache-clear">清空缓存</button>
+            <span class="tiny muted" id="cache-info"></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>运行状态</h2>
+          <dl class="kv" id="runtime-kv"></dl>
+          <div class="actions">
+            <button class="primary" id="resync">重新编译规则</button>
+            <span class="tiny muted" id="resync-info"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 规则 ================= -->
+      <section class="panel hidden" data-panel="rules">
+        <h1>域名规则</h1>
+        <p class="lead">
+          每行一条规则，语法与 mosdns 的 domain matcher 一致。命中优先级：
+          <b>直连 / @@ 例外 &gt; 拦截 &gt; 重定向 &gt; 代理 &gt; 默认</b>。
+        </p>
+
+        <div class="card">
+          <div class="list-tabs" id="list-tabs">
+            <button class="chip active" data-list="block">拦截</button>
+            <button class="chip" data-list="direct">直连</button>
+            <button class="chip" data-list="proxy">代理</button>
+            <button class="chip" data-list="redirect">重定向</button>
+          </div>
+          <textarea id="list-text" rows="16" spellcheck="false"></textarea>
+          <div class="actions between">
+            <span class="tiny muted" id="list-stat">—</span>
+            <div class="actions">
+              <button id="list-reload">放弃修改</button>
+              <button class="primary" id="list-save">保存并生效</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>规则测试</h2>
+          <div class="inline">
+            <input type="text" id="test-host" placeholder="输入域名或完整 URL，例如 www.example.com" spellcheck="false">
+            <button id="test-run">测试</button>
+          </div>
+          <div id="test-result" class="test-result"></div>
+        </div>
+
+        <div class="card">
+          <h2>语法速查</h2>
+          <table class="table">
+            <thead><tr><th>写法</th><th>含义</th><th>DNR 实现</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">example.com</td><td>后缀匹配，含所有子域</td><td class="mono">||example.com^</td></tr>
+              <tr><td class="mono">domain:example.com</td><td>同上，显式写法</td><td class="mono">||example.com^</td></tr>
+              <tr><td class="mono">full:www.example.com</td><td>精确匹配，不含子域</td><td class="mono">|https://www.example.com^</td></tr>
+              <tr><td class="mono">keyword:analytics</td><td>主机名包含该字符串</td><td class="mono">urlFilter 子串</td></tr>
+              <tr><td class="mono">regexp:^ad\d+\.</td><td>正则匹配（占用正则配额）</td><td class="mono">regexFilter</td></tr>
+              <tr><td class="mono">@@||example.com^</td><td>例外 / 白名单</td><td class="mono">allow（优先级 1000）</td></tr>
+              <tr><td class="mono">0.0.0.0 example.com</td><td>hosts 文件格式</td><td class="mono">||example.com^</td></tr>
+              <tr><td class="mono">domain:a.com =&gt; b.com</td><td>重定向（仅重定向列表）</td><td class="mono">redirect + transform</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= 上游 ================= -->
+      <section class="panel hidden" data-panel="upstream">
+        <h1>上游 DNS</h1>
+        <p class="lead">
+          全部通过 DoH（HTTPS）查询，不使用系统 DNS，因此不受本地 DNS 劫持影响。
+          上游地址必须是 https；明文 http 仅允许本机回环地址（如 <code class="mono">127.0.0.1</code>），用于本地调试。
+        </p>
+
+        <div class="card">
+          <div class="grid-2">
+            <label class="field">
+              <span>默认上游</span>
+              <select id="default-upstream"></select>
+            </label>
+            <label class="field">
+              <span>查询超时（毫秒）</span>
+              <input type="number" id="timeout" min="1000" max="30000" step="500">
+            </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>按域名分流到不同上游</h2>
+          <p class="row-desc">等价于 mosdns 的 sequence + upstream 选择：自上而下匹配，命中第一条即生效。</p>
+          <div id="split-list" class="stack"></div>
+          <div class="inline">
+            <input type="text" id="split-pattern" placeholder="规则，如 domain:corp.example.com 或 regexp:^intra\.">
+            <select id="split-upstream" class="w-180"></select>
+            <button id="split-add">添加</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>自定义上游</h2>
+          <p class="row-desc">URL 必须是 https（本机回环可用 http），需支持 RFC 8484 JSON 形式（返回 application/dns-json），用 <code class="mono">{name}</code> 与 <code class="mono">{type}</code> 占位。</p>
+          <div id="custom-list" class="stack"></div>
+          <div class="inline">
+            <input type="text" id="custom-name" placeholder="名称" class="w-140">
+            <input type="text" id="custom-url" placeholder="https://dns.example.com/resolve?name={name}&type={type}">
+            <button id="custom-add">添加</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>连通性测试</h2>
+          <div class="inline">
+            <input type="text" id="probe-name" value="www.example.com" spellcheck="false">
+            <select id="probe-upstream" class="w-180"></select>
+            <button id="probe-run">测试</button>
+          </div>
+          <div id="probe-result" class="test-result"></div>
+        </div>
+      </section>
+
+      <!-- ================= 代理 ================= -->
+      <section class="panel hidden" data-panel="proxy">
+        <h1>分流代理</h1>
+        <p class="lead">
+          用 PAC 脚本按域名决定"走代理 / 直连"，对应 mosdns 的分流能力。
+          此功能需要 <code class="mono">proxy</code> 权限，仅在开启时申请；关闭后会立即恢复系统代理设置。
+        </p>
+
+        <div class="card">
+          <div class="row">
+            <div>
+              <div class="row-title">启用分流代理</div>
+              <div class="row-desc">开启时浏览器会提示授予"控制代理设置"权限</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="proxy-enabled"><span></span></label>
+          </div>
+          <div class="grid-2">
+            <label class="field">
+              <span>模式</span>
+              <select id="proxy-mode">
+                <option value="list">仅代理列表内域名（分流）</option>
+                <option value="global">全部走代理</option>
+                <option value="direct">全部直连</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>协议</span>
+              <select id="proxy-type">
+                <option value="PROXY">HTTP</option>
+                <option value="HTTPS">HTTPS</option>
+                <option value="SOCKS5">SOCKS5</option>
+                <option value="SOCKS4">SOCKS4</option>
+                <option value="QUIC">QUIC</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>服务器地址</span>
+              <input type="text" id="proxy-server" placeholder="127.0.0.1" spellcheck="false">
+            </label>
+            <label class="field">
+              <span>端口</span>
+              <input type="number" id="proxy-port" min="1" max="65535">
+            </label>
+          </div>
+          <div class="actions">
+            <button class="primary" id="proxy-save">保存并应用</button>
+            <button id="proxy-off">撤销代理设置</button>
+          </div>
+          <div id="proxy-status" class="test-result"></div>
+        </div>
+
+        <div class="card">
+          <h2>说明</h2>
+          <ul class="bullets tiny muted">
+            <li>PAC 脚本只支持 domain / full / keyword 三种规则，正则规则会被忽略（浏览器 PAC 引擎不支持可靠的正则）。</li>
+            <li>本地地址（localhost、10.x、192.168.x、172.16-31.x、*.local）始终直连。</li>
+            <li>直连列表与 @@ 例外始终优先于代理列表。</li>
+            <li>不支持代理认证（用户名/密码）；需要认证时请在本机代理客户端上放行 127.0.0.1。</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ================= 订阅 ================= -->
+      <section class="panel hidden" data-panel="subs">
+        <h1>规则订阅</h1>
+        <p class="lead">从远程地址拉取规则文本，与手动规则合并编译。拉取时只会申请该订阅域名自身的访问权限。</p>
+
+        <div class="card">
+          <div id="sub-list" class="stack"></div>
+          <div class="inline">
+            <input type="text" id="sub-name" placeholder="名称" class="w-140">
+            <input type="text" id="sub-url" placeholder="https://example.com/list.txt">
+            <select id="sub-target" class="w-120">
+              <option value="block">拦截</option>
+              <option value="direct">直连</option>
+              <option value="proxy">代理</option>
+              <option value="redirect">重定向</option>
+            </select>
+            <button id="sub-add">添加</button>
+          </div>
+          <div class="tiny muted" id="sub-hint">支持 hosts、Adblock 域名语法与 mosdns 前缀语法；通配类规则会被自动跳过。</div>
+        </div>
+      </section>
+
+      <!-- ================= 数据 ================= -->
+      <section class="panel hidden" data-panel="data">
+        <h1>导入导出</h1>
+        <p class="lead">配置以 JSON 保存，不含任何浏览记录。可用于多设备同步或备份。</p>
+
+        <div class="card">
+          <div class="actions">
+            <button class="primary" id="export-btn">导出配置文件</button>
+            <button id="import-btn">导入配置文件</button>
+            <input type="file" id="import-file" accept="application/json,.json" class="hidden">
+          </div>
+          <div class="tiny muted" id="data-info"></div>
+        </div>
+
+        <div class="card danger-zone">
+          <h2>重置</h2>
+          <p class="row-desc">清除全部规则与设置，恢复初始状态。此操作不可撤销。</p>
+          <button class="danger" id="reset-btn">恢复默认设置</button>
+        </div>
+      </section>
+
+      <!-- ================= 关于 ================= -->
+      <section class="panel hidden" data-panel="about">
+        <h1>关于</h1>
+        <div class="card">
+          <dl class="kv">
+            <dt>版本</dt><dd id="about-version">—</dd>
+            <dt>定位</dt><dd>浏览器层的 DNS 分流与拦截，功能模型参考 mosdns</dd>
+            <dt>技术</dt><dd>Manifest V3 · declarativeNetRequest · DoH (RFC 8484) · PAC</dd>
+            <dt>数据</dt><dd>全部本地存储，不上传任何数据，不含分析 SDK</dd>
+            <dt>许可</dt><dd>MIT</dd>
+          </dl>
+        </div>
+        <div class="card">
+          <h2>能力边界</h2>
+          <p class="row-desc">
+            浏览器扩展无法接管操作系统 DNS。本扩展实现的是"策略层"：域名匹配、拦截/白名单、
+            按域名分流上游与代理、DoH 缓存与观测。真正的系统级 DNS 接管仍需 mosdns 等本地方案。
+          </p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast hidden" id="toast"></div>
+
+  <script src="options.js" type="module"></script>
+</body>
+</html>
